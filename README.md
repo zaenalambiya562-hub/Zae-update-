@@ -1,2 +1,40 @@
-# Zae-update-
-Website berita unik
+# Pelajar-NU-Indramayu
+Info menarik pelajar NU Indramayu
+// ==== STRUKTUR PROYEK ==== // src/ // ├── App.jsx // ├── admin/ // │   └── AdminDashboard.jsx // └── public/ //     └── PublicReader.jsx
+
+// ==== FILE: src/App.jsx ==== import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; import AdminDashboard from './admin/AdminDashboard'; import PublicReader from './public/PublicReader';
+
+function App() { return ( <Router> <Routes> <Route path="/admin/" element={<AdminDashboard />} /> <Route path="/" element={<PublicReader />} /> </Routes> </Router> ); }
+
+export default App;
+
+// ==== FILE: src/admin/AdminDashboard.jsx ==== import { useState } from 'react'; import { useNavigate } from 'react-router-dom';
+
+function AdminDashboard() { const [title, setTitle] = useState(''); const [category, setCategory] = useState('Umum'); const [content, setContent] = useState(''); const navigate = useNavigate();
+
+const handlePublish = () => { const articles = JSON.parse(localStorage.getItem('articles')) || []; const newArticle = { title, category, content, date: new Date().toISOString(), author: 'Penulis: Pelajar NU Indramayu' }; localStorage.setItem('articles', JSON.stringify([newArticle, ...articles])); navigate('/'); };
+
+return ( <div className="min-h-screen bg-green-900 text-white p-6"> <h1 className="text-3xl font-bold mb-6">Admin Redaksi - Pelajar NU Indramayu</h1> <input type="text" placeholder="Judul Berita" className="w-full p-3 mb-4 rounded text-black" value={title} onChange={(e) => setTitle(e.target.value)} /> <select className="w-full p-3 mb-4 rounded text-black" value={category} onChange={(e) => setCategory(e.target.value)} > <option value="Umum">Umum</option> <option value="Politik">Politik</option> <option value="Pendidikan">Pendidikan</option> <option value="Ekonomi">Ekonomi</option> <option value="Keislaman">Keislaman</option> </select> <textarea placeholder="Isi berita..." className="w-full h-60 p-3 mb-4 rounded text-black" value={content} onChange={(e) => setContent(e.target.value)} ></textarea> <button
+onClick={handlePublish}
+className="bg-white text-green-900 font-semibold px-6 py-2 rounded hover:bg-green-200"
+> Publikasikan </button> </div> ); }
+
+export default AdminDashboard;
+
+// ==== FILE: src/public/PublicReader.jsx ==== import { useEffect, useState } from 'react';
+
+function PublicReader() { const [articles, setArticles] = useState([]); const [search, setSearch] = useState(''); const [filtered, setFiltered] = useState([]);
+
+useEffect(() => { const stored = localStorage.getItem('articles'); if (stored) { const parsed = JSON.parse(stored); setArticles(parsed); setFiltered(parsed); } }, []);
+
+const handleSearch = (e) => { const keyword = e.target.value; setSearch(keyword); if (keyword.trim() === '') { setFiltered(articles); } else { const results = articles.filter((a) => a.title.toLowerCase().includes(keyword.toLowerCase()) || a.content.toLowerCase().includes(keyword.toLowerCase()) ); setFiltered(results); } };
+
+return ( <div className="min-h-screen bg-white text-black p-6"> <h1 className="text-4xl font-extrabold text-center mb-6">PELJAR NU INDRAMAYU</h1> <div className="max-w-2xl mx-auto mb-6"> <input
+type="text"
+placeholder="Cari berita..."
+className="w-full p-3 border border-gray-300 rounded"
+value={search}
+onChange={handleSearch}
+/> </div> <div className="space-y-6 max-w-3xl mx-auto"> {filtered.length === 0 && <p className="text-center text-gray-600">Tidak ada berita ditemukan.</p>} {filtered.map((art, idx) => ( <div key={idx} className="border-b pb-6"> <h2 className="text-2xl font-semibold">{art.title}</h2> <p className="text-sm text-gray-500 mb-1">{new Date(art.date).toLocaleString()} | {art.category}</p> <div className="whitespace-pre-wrap mb-2">{art.content}</div> <p className="text-sm italic text-right">{art.author}</p> </div> ))} </div> </div> ); }
+
+export default PublicReader;
